@@ -81,7 +81,7 @@ So from the start:
 
 $$
 \begin{cases}
-&v_l = v - q \dot{\theta}
+&v_l = v - q \dot{\theta}\\
 &v_r = v + q \dot{\theta}
 \end{cases}
 $$
