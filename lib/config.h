@@ -6,30 +6,6 @@
 #define JOYSTICK_POLLING_RATE 100
 #define MOTORS_AMOUNT 4
 
-// we normalize the RC stick to be in between -1 and 1,
-
-// this means we only use
-#define STICK_DEADZONE 0.05f
-
-typedef struct {
-  uint32_t adcMin;
-  uint32_t adcMax;
-  uint32_t adcMid;
-  float deadzone;
-} JoystickConfig;
-
-const JoystickConfig joystickConfig = {
-    .adcMin = 0, .adcMax = 4096, .adcMid = 2048, .deadzone = 0.05f};
-
-typedef struct {
-  uint8_t in1;
-  uint8_t in2;
-  uint8_t pwm;
-} MotorPins;
-
-const MotorPins motorPins[MOTORS_AMOUNT] = {
-    {26, 25, 33}, {32, 27, 14}, {21, 18, 5}, {23, 22, 19}};
-
 typedef struct {
   uint8_t up;
   uint8_t left;
@@ -39,4 +15,45 @@ typedef struct {
   uint8_t y;
 } RemoteControlPins;
 
-const RemoteControlPins remoteControlPins = {16, 2, 15, 4, 35, 34};
+const RemoteControlPins remoteControlPins = {
+    .up = 16, .left = 2, .down = 15, .right = 4, .x = 35, .y = 34};
+
+// we normalize the joystick to be in between -1 and 1,
+
+typedef struct {
+  uint32_t adcMin;
+  uint32_t adcMax;
+  uint32_t adcMid;
+  float deadzone;
+  uint32_t debounceDelayMs;
+} JoystickConfig;
+
+const JoystickConfig joystickConfig = {.adcMin = 0,
+                                       .adcMax = 4096,
+                                       .adcMid = 2048,
+                                       .deadzone = 0.0f,
+                                       .debounceDelayMs = 0};
+
+// TODO: find deadzone for joystick
+
+typedef struct {
+  uint8_t in1;
+  uint8_t in2;
+  uint8_t pwm;
+} MotorPins;
+
+const MotorPins motorPins[MOTORS_AMOUNT] = {{.in1 = 26, .in2 = 25, .pwm = 33},
+                                            {.in1 = 32, .in2 = 27, .pwm = 14},
+                                            {.in1 = 21, .in2 = 18, .pwm = 5},
+                                            {.in1 = 23, .in2 = 22, .pwm = 19}};
+
+typedef struct {
+  uint32_t freq;
+  uint8_t resolution;
+  float deadzone;
+} MotorConfig;
+
+const MotorConfig motorConfig = {
+    .freq = 20000, .resolution = 8, .deadzone = 0.0f};
+
+// TODO: find motor deadzone in terms of duty cycle
