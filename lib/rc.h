@@ -5,6 +5,13 @@
 #include <Arduino.h>
 #include <stdint.h>
 
+// increase or decrease 5% (depending on the variable) of the total range
+#define SPEED_UPDATE_STEP 0.05f
+
+// detect on button press, but since the button is normally 1, we detect the
+// falling edge
+#define BUTTON_INTERRUPT_MODE FALLING
+
 typedef struct {
   uint32_t x;
   uint32_t y;
@@ -18,23 +25,6 @@ typedef struct {
   uint32_t right;
 } ButtonsState;
 
-// this variable is normalized to be in between 0 and 1
-typedef struct {
-  float linear;
-  float angular;
-} Speed;
-
-const Speed speed = {.linear = 0, .angular = 0};
-
-typedef struct {
-  float linear;
-  float angular;
-} SpeedLimit;
-
-//
-extern SpeedLimit speedLimit;
-
-//
 void buttonISR(void *arg);
 
 // TODO: update state speed somehow, and write functions for each state that

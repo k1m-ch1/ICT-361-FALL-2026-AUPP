@@ -2,12 +2,11 @@
 
 #include "rc.h"
 #include "config.h"
+#include "mixer.h"
 #include <Arduino.h>
 #include <stdint.h>
 
 TaskHandle_t debounceThenUpdateTaskHandle = nullptr;
-
-// SpeedLimit speedLimit = {.linear = 0.5f, .angular = 0.5f};
 
 void buttonISR(void *arg) {
   // we're expecting the arg to be the button pin
@@ -36,7 +35,6 @@ void debounceThenUpdate(void *arg) {
     );
 
     // button is now BUTTON_UP, BUTTON_DOWN, etc.
-
     delay(joystickConfig.debounceDelayMs);
     handleButtonAfterDebounce(buttonPin);
   }
@@ -52,11 +50,28 @@ void handleButtonAfterDebounce(uint8_t buttonPin) {
 
   Serial.printf("Received button: %d, timestamp: %lu\r\n", buttonPin, millis());
 
-  /*
-  if (buttonPin == remoteControlPins.up) {
-
+  switch (buttonPin) {
+  case remoteControlPins.up:
+    speedLimit.linear += SPEED_UPDATE_STEP;
+    break;
+  case remoteControlPins.down:
+    speedLimit.linear -= SPEED_UPDATE_STEP;
+    break;
+  case remoteControlPins.left:
+    speedLimit.angular -= SPEED_UPDATE_STEP;
+    break;
+  case remoteControlPins.right:
+    speedLimit.angular += SPEED_UPDATE_STEP;
+    break;
   }
-  */
+
+  // there's no arguing that speedLimit is noramlized to between 0 and 1
+  speedLimit.linear = max(0.0f, min(speedLimit.linear, 1.0f));
+  speedLimit.angular = max(0.0f, min(speedLimit.angular, 1.0f));
+  Serial.print("linear: ");
+  Serial.print(speedLimit.linear);
+  Serial.print(", angular: ");
+  Serial.println(speedLimit.angular);
 }
 
 void readAndUpdateJoystick(JoystickState *joystickState) {}

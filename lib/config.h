@@ -15,7 +15,7 @@ typedef struct {
   uint8_t y;
 } RemoteControlPins;
 
-const RemoteControlPins remoteControlPins = {
+constexpr RemoteControlPins remoteControlPins = {
     .up = 16, .left = 2, .down = 15, .right = 4, .x = 35, .y = 34};
 
 // we normalize the joystick to be in between -1 and 1,
@@ -32,7 +32,7 @@ const JoystickConfig joystickConfig = {.adcMin = 0,
                                        .adcMax = 4096,
                                        .adcMid = 2048,
                                        .deadzone = 0.0f,
-                                       .debounceDelayMs = 20};
+                                       .debounceDelayMs = 0};
 
 // TODO: find deadzone for joystick
 

@@ -2,6 +2,7 @@
 
 - [x] write approximate methods to control $v$ and $\dot{\theta}$
 - [] measure button bounce back and measure it
+- [] investigate why left and right button aren't responsive for interrupts
 - [] approximate that the motor's speed is approximately proportional to the motor speed
 - [] figure out the motor's deadzone through experimental means
 - [] find optimal joystick deadzone
