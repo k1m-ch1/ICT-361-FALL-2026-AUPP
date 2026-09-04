@@ -219,3 +219,15 @@ attachInterruptArg(DOWN_PIN,  buttonISR, (void *)BUTTON_DOWN,  RISING);
 attachInterruptArg(LEFT_PIN,  buttonISR, (void *)BUTTON_LEFT,  RISING);
 attachInterruptArg(RIGHT_PIN, buttonISR, (void *)BUTTON_RIGHT, RISING);
 ```
+
+It seems like we can't really press then release faster than 150 ms. As for debouncing:
+
+```
+12, 14247
+14, 14250
+15, 14253
+```
+
+Where the right side is in milliseconds.
+
+So, it seems like around 20 ms delay is enough for debouncing.

@@ -32,7 +32,7 @@ const JoystickConfig joystickConfig = {.adcMin = 0,
                                        .adcMax = 4096,
                                        .adcMid = 2048,
                                        .deadzone = 0.0f,
-                                       .debounceDelayMs = 0};
+                                       .debounceDelayMs = 20};
 
 // TODO: find deadzone for joystick
 

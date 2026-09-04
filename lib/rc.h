@@ -2,6 +2,7 @@
 
 // handles receiving inputs from the joystick
 
+#include <Arduino.h>
 #include <stdint.h>
 
 typedef struct {
@@ -17,17 +18,31 @@ typedef struct {
   uint32_t right;
 } ButtonsState;
 
+// this variable is normalized to be in between 0 and 1
 typedef struct {
   float linear;
   float angular;
 } Speed;
 
+const Speed speed = {.linear = 0, .angular = 0};
+
+typedef struct {
+  float linear;
+  float angular;
+} SpeedLimit;
+
 //
-void buttonISR();
+extern SpeedLimit speedLimit;
+
+//
+void buttonISR(void *arg);
 
 // TODO: update state speed somehow, and write functions for each state that
 // should be handled
 
-void debounceThenUpdate();
+// this is a task
+extern TaskHandle_t debounceThenUpdateTaskHandle;
 
+void debounceThenUpdate(void *arg);
 void readAndUpdateJoystick(JoystickState *joystickState);
+void handleButtonAfterDebounce(uint8_t buttonPin);

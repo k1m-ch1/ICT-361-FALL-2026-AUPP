@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+./compile $1 && arduino-cli upload --fqbn esp32:esp32:firebeetle32 $1 -p $2
