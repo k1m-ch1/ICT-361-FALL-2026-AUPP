@@ -6,3 +6,7 @@
 Speed speed = {.linear = 0, .angular = 0};
 
 SpeedLimit speedLimit = {.linear = 0.5f, .angular = 0.5f};
+
+SemaphoreHandle_t speedLimitMutex;
+
+void mixerInit() { speedLimitMutex = xSemaphoreCreateMutex(); }

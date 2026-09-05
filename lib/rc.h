@@ -24,10 +24,10 @@ typedef struct {
 } JoystickState;
 
 typedef struct {
-  uint32_t up;
-  uint32_t left;
-  uint32_t down;
-  uint32_t right;
+  bool up;
+  bool left;
+  bool down;
+  bool right;
 } ButtonState;
 
 void buttonISR(void *arg);
@@ -46,3 +46,4 @@ void debounceThenUpdate(void *arg);
 void handleButtonAfterDebounce(uint8_t buttonPin);
 void pollJoystickTask();
 void pollButtonTask();
+bool detectEdge(uint8_t prevState, uint8_t currentState);

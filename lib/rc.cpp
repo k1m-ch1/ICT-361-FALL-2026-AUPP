@@ -16,7 +16,16 @@ SemaphoreHandle_t joystickStateMutex;
 SemaphoreHandle_t buttonStateMutex;
 
 void rcInit() {
+  // initializing pinModes in here
+  pinMode(remoteControlPins.x, INPUT);
+  pinMode(remoteControlPins.y, INPUT);
+  pinMode(remoteControlPins.up, INPUT);
+  pinMode(remoteControlPins.left, INPUT);
+  pinMode(remoteControlPins.down, INPUT);
+  pinMode(remoteControlPins.right, INPUT);
+
   buttonState = {.up = 0, .left = 0, .down = 0, .right = 0};
+  prevButtonState = buttonState;
   joystickState = {.x = joystickConfig.adcMid, .y = joystickConfig.adcMid};
   debounceThenUpdateTaskHandle = nullptr;
   joystickStateMutex = xSemaphoreCreateMutex();
@@ -113,19 +122,47 @@ void pollJoystickTask() {
   }
 }
 
-void pollButtonTask() {
+bool detectEdge(uint8_t prevState, uint8_t currentState) {
+  if (BUTTON_INTERRUPT_MODE == FALLING) {
+    // want to be true when prevState is 1 and current state is 0
+    return prevState & (!currentState);
+  } else if (BUTTON_POLLING_RATE == RISING) {
+    // want to be true when the current state is 0 and current state is 1
+    return (!prevState) & currentState;
+  } else {
+    // it has to be CHANGE otherwise
+    return (prevState & (!currentState)) || ((!prevState) & currentState);
+  }
+}
 
+void pollButtonTask() {
   const TickType_t period = pdMS_TO_TICKS((1 / BUTTON_POLLING_RATE));
   TickType_t lastWakeTime = xTaskGetTickCount();
 
   while (true) {
     // we'll just read as normal, but we'll need to make a mutex lock I guess
-    xSemaphoreTake(joystickStateMutex, portMAX_DELAY); // wait indefinitely
+    xSemaphoreTake(buttonStateMutex, portMAX_DELAY); // wait indefinitely
+    prevButtonState = buttonState;
+    // code is a little repetitive, but perhaps more readable?
     buttonState.up = digitalRead(remoteControlPins.up);
     buttonState.down = digitalRead(remoteControlPins.down);
     buttonState.left = digitalRead(remoteControlPins.left);
     buttonState.right = digitalRead(remoteControlPins.right);
-    xSemaphoreGive(joystickStateMutex);
+    if (detectEdge(prevButtonState.up, buttonState.up)) {
+      // right now, we making polling rate so low that there's no need for
+      // debouncing
+      handleButtonAfterDebounce(remoteControlPins.up);
+    }
+    if (detectEdge(prevButtonState.down, buttonState.down)) {
+      handleButtonAfterDebounce(remoteControlPins.down);
+    }
+    if (detectEdge(prevButtonState.left, buttonState.left)) {
+      handleButtonAfterDebounce(remoteControlPins.left);
+    }
+    if (detectEdge(prevButtonState.right, buttonState.right)) {
+      handleButtonAfterDebounce(remoteControlPins.right);
+    }
+    xSemaphoreGive(buttonStateMutex);
     vTaskDelayUntil(&lastWakeTime, period);
   }
 }
