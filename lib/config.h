@@ -3,7 +3,6 @@
 #include <stdint.h>
 
 #define ADC_RESOLUTION 12
-#define JOYSTICK_POLLING_RATE 100
 #define MOTORS_AMOUNT 4
 
 typedef struct {

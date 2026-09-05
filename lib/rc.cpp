@@ -7,7 +7,21 @@
 #include <Arduino.h>
 #include <stdint.h>
 
-TaskHandle_t debounceThenUpdateTaskHandle = nullptr;
+JoystickState joystickState;
+ButtonState buttonState;
+ButtonState prevButtonState;
+
+TaskHandle_t debounceThenUpdateTaskHandle;
+SemaphoreHandle_t joystickStateMutex;
+SemaphoreHandle_t buttonStateMutex;
+
+void rcInit() {
+  buttonState = {.up = 0, .left = 0, .down = 0, .right = 0};
+  joystickState = {.x = joystickConfig.adcMid, .y = joystickConfig.adcMid};
+  debounceThenUpdateTaskHandle = nullptr;
+  joystickStateMutex = xSemaphoreCreateMutex();
+  buttonStateMutex = xSemaphoreCreateMutex();
+}
 
 void buttonISR(void *arg) {
   // we're expecting the arg to be the button pin
@@ -50,11 +64,12 @@ void handleButtonAfterDebounce(uint8_t buttonPin) {
   }
 
   LogMessage logMessage;
-  logMesage.timestamp = millis();
+  logMessage.timestamp = millis();
   logMessage.logSource = RC;
   sprintf(logMessage.text, "Received button: %d, timestamp: %lu\r\n", buttonPin,
           millis());
   xQueueSend(logQueueHandle, &logMessage, 0);
+
   // kinda lengthy just to get a log message out, but maybe it's managable...
 
   // sending it to the queue
@@ -84,4 +99,33 @@ void handleButtonAfterDebounce(uint8_t buttonPin) {
   */
 }
 
-void readAndUpdateJoystick(JoystickState *joystickState) {}
+void pollJoystickTask() {
+  const TickType_t period = pdMS_TO_TICKS((1 / JOYSTICK_POLLING_RATE));
+  TickType_t lastWakeTime = xTaskGetTickCount();
+
+  while (true) {
+    // we'll just read as normal, but we'll need to make a mutex lock I guess
+    xSemaphoreTake(joystickStateMutex, portMAX_DELAY); // wait indefinitely
+    joystickState.x = analogRead(remoteControlPins.x);
+    joystickState.y = analogRead(remoteControlPins.x);
+    xSemaphoreGive(joystickStateMutex);
+    vTaskDelayUntil(&lastWakeTime, period);
+  }
+}
+
+void pollButtonTask() {
+
+  const TickType_t period = pdMS_TO_TICKS((1 / BUTTON_POLLING_RATE));
+  TickType_t lastWakeTime = xTaskGetTickCount();
+
+  while (true) {
+    // we'll just read as normal, but we'll need to make a mutex lock I guess
+    xSemaphoreTake(joystickStateMutex, portMAX_DELAY); // wait indefinitely
+    buttonState.up = digitalRead(remoteControlPins.up);
+    buttonState.down = digitalRead(remoteControlPins.down);
+    buttonState.left = digitalRead(remoteControlPins.left);
+    buttonState.right = digitalRead(remoteControlPins.right);
+    xSemaphoreGive(joystickStateMutex);
+    vTaskDelayUntil(&lastWakeTime, period);
+  }
+}
