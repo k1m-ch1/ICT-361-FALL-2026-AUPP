@@ -2,6 +2,7 @@
 
 #include "rc.h"
 #include "config.h"
+#include "logging.h"
 #include "mixer.h"
 #include <Arduino.h>
 #include <stdint.h>
@@ -48,8 +49,15 @@ void handleButtonAfterDebounce(uint8_t buttonPin) {
     return;
   }
 
-  Serial.printf("Received button: %d, timestamp: %lu\r\n", buttonPin, millis());
+  LogMessage logMessage;
+  logMesage.timestamp = millis();
+  logMessage.logSource = RC;
+  sprintf(logMessage.text, "Received button: %d, timestamp: %lu\r\n", buttonPin,
+          millis());
+  xQueueSend(logQueueHandle, &logMessage, 0);
+  // kinda lengthy just to get a log message out, but maybe it's managable...
 
+  // sending it to the queue
   switch (buttonPin) {
   case remoteControlPins.up:
     speedLimit.linear += SPEED_UPDATE_STEP;
@@ -68,10 +76,12 @@ void handleButtonAfterDebounce(uint8_t buttonPin) {
   // there's no arguing that speedLimit is noramlized to between 0 and 1
   speedLimit.linear = max(0.0f, min(speedLimit.linear, 1.0f));
   speedLimit.angular = max(0.0f, min(speedLimit.angular, 1.0f));
+  /*
   Serial.print("linear: ");
   Serial.print(speedLimit.linear);
   Serial.print(", angular: ");
   Serial.println(speedLimit.angular);
+  */
 }
 
 void readAndUpdateJoystick(JoystickState *joystickState) {}

@@ -232,3 +232,23 @@ It seems like we can't really press then release faster than 150 ms. As for debo
 Where the right side is in milliseconds.
 
 So, it seems like around 20 ms delay is enough for debouncing.
+
+## RTOS queue creation
+
+```
+QueueHandle_t logQueue = xQueueCreate(LOG_QUEUE_LENGTH, sizeof(LogMessage));
+```
+
+Taking it out:
+
+```
+xQueueReceive(logQueue, &msg, portMAX_DELAY);
+```
+
+Pushing it to the queue:
+
+```
+xQueueSend(logQueue, &msg, 0);
+```
+
+
