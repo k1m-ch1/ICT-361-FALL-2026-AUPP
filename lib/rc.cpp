@@ -117,7 +117,7 @@ void pollJoystickTask(void *args) {
     // we'll just read as normal, but we'll need to make a mutex lock I guess
     xSemaphoreTake(joystickStateMutex, portMAX_DELAY); // wait indefinitely
     joystickState.x = analogRead(remoteControlPins.x);
-    joystickState.y = analogRead(remoteControlPins.x);
+    joystickState.y = analogRead(remoteControlPins.y);
     xSemaphoreGive(joystickStateMutex);
     vTaskDelayUntil(&lastWakeTime, period);
   }

@@ -1,12 +1,12 @@
 # TODO
 
 - [x] write approximate methods to control $v$ and $\dot{\theta}$
-- [] measure button bounce back and measure it
-- [] investigate why left and right button aren't responsive for interrupts
+~~- [] measure button bounce back and measure it~~
+~~- [] investigate why left and right button aren't responsive for interrupts~~
 ~~- [] approximate that the motor's speed is approximately proportional to the motor speed~~
-- [] figure out the motor's deadzone through experimental means
-- [] find optimal joystick deadzone
-- [] use RTOS create tasks that handle polling, and writing commands to motors, and logging to the serial terminal
+- [x] figure out the motor's deadzone through experimental means
+- [x] find optimal joystick deadzone
+- [x] use RTOS create tasks that handle polling, and writing commands to motors, and logging to the serial terminal
 - [] turn it into a library
 - [] write flowchart
 - [] format code
@@ -290,4 +290,107 @@ It's probably best to implement this as a pure function. call it `asymMap` and c
 - `asymMap` requires a `minLeft, maxLeft and minRight, maxRight, raw` and spits out a scalar called `scaled` between `-1` and `1` (this will be used for joystick ADC to actual motor commands)
 - `invAsymMap` requires a `minLeft, maxLeft, minRight, maxRight, scaled` and spits out something called `raw` between `minLeft` and `maxRight` (this will be used for commanding motor's PWM).
 
+There's however, some trouble that must be solved when we need to invert it. Essentially, for `asymMap`, normally, it would be like:
 
+- `[minLeft, maxLeft]` -> `[-1, 0]`
+- and `[maxLeft, minRight]` -> 0
+- and `[minRight, maxRight` -> `[0, 1]`
+
+When we invert it however:
+
+- `[minRight, maxRight] -> [0, -1]`
+- middle is same
+- `[minLeft, maxLeft] -> [1, 0]`
+
+So I guess the easiest way is to flip the sign of the mapped output?
+
+Now, I guess we could say it's the same for `invAsymMap`.
+
+# Sign convention
+
+For normal hobby RC, the sign convention is as such:
+
+```
+y+
+^
+|
+---> x+
+```
+
+So, it's kinda interesting, because, if look at the x-y plane of the drone, normal mapping without sign change would mean that (let's say that this is the left stick) positive $\dot{\theta}$ is CW, which isn't the common mathematical convention. I think it's best to use the normal mathematical sign convention, meaning that we must flip it.
+
+# Mixing matrix
+
+Now, for a normal differential drive robot, we have 2 input which are linear velocity command (or throttle) $u_t$ and angular velocity command $u_a$ , and we have 2 output, which is $u_l$ for left motor command and $u_r$for right motor command.
+
+We then have:
+
+$$
+\begin{cases}
+&u_l = u_t - u_a\\
+&u_r = u_t + u_a\\
+\end{cases}
+$$
+
+Essentially:
+
+$$
+\begin{bmatrix}
+u_l\\
+u_r
+\end{bmatrix}
+=
+\begin{bmatrix}
+1&-1\\
+1&1\\
+\end{bmatrix}
+\begin{bmatrix}
+u_t\\
+u_a
+\end{bmatrix}
+$$
+
+Our sign convention now is such that positive $u_l$ makes the robot moves forward.
+
+However, for this particular robot, we can command each of the 4 motors separately, So in fact, we must do:
+
+$$
+\begin{bmatrix}
+u_{m0}\\
+u_{m1}\\
+u_{m2}\\
+u_{m3}
+\end{bmatrix}
+= 
+\mathbf{S}
+\begin{bmatrix}
+u_l\\
+u_r
+\end{bmatrix}
+$$
+
+So, should I already multiple the sign matrix $\mathbf{S}$ and the mixing matrix $\mathbf{M}$ or should I use the decomposition? Essentially, I think this is the case because it might be possible to use mechanum wheels on the robot, so I want to make the convention similar to how we can use the same cleanflight software to control not only quad x architecture but hexcopters too. It's probably more configurable if I were to use the decomposition.
+
+The sign matrix not only selects which motor is left or right, it also selects the sign, and in this case, it will follow the hardware's sign where positive is going to be:
+
+- IN1 HIGH
+- IN2 LOW
+
+etc.
+
+# Information propagation
+
+So essentially, `mixer.h` should be its own isolated file that doesn't depend on `rc.h` because we should be able to use it in other projects too, like, for remote controlled robot or bluetooth controlled robot.
+
+As such, the internal struct `speedLimit` and `speed` should belong to `mixer.h`.
+
+Now, there's a problem of race conditions. As such, we should have mutexes that protect both `speedLimit` and `speed`.
+
+There are also two architectures for notifying to update the motors.
+
+- We can have a separate motor task that independently reads `speed` and updates it accordingly
+- We can have a motor task that waits until a task notifies that it has updated the speed variable, and then have the motor task run, of course, with mutex for protection just in case.
+
+I know that in cleanflight, we have a separate IMU task, and a separate PID task that can run at different frequencies, and I guess the PID task's frequency would then need to be synchronized to the mixer task, and also motor command task, which means notification is a better architecture?
+
+The cool thing about the notification architecture is that we can easily turn it into a separate asynchronous task which operates at its own frequency by simply having a task that notifies that task every fixed period.

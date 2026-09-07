@@ -22,15 +22,15 @@ constexpr RemoteControlPins remoteControlPins = {
 typedef struct {
   uint32_t adcMin;
   uint32_t adcMax;
-  uint32_t adcMid;
-  float deadzone;
+  uint32_t adcDeadzoneMin;
+  uint32_t adcDeadzoneMax;
   uint32_t debounceDelayMs;
 } JoystickConfig;
 
 const JoystickConfig joystickConfig = {.adcMin = 0,
                                        .adcMax = 4096,
-                                       .adcMid = 2048,
-                                       .deadzone = 0.0f,
+                                       .adcDeadzoneMin = 1820,
+                                       .adcDeadzoneMax = 1865,
                                        .debounceDelayMs = 20};
 
 // TODO: find deadzone for joystick
