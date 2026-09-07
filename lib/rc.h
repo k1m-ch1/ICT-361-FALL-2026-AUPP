@@ -42,8 +42,9 @@ extern TaskHandle_t debounceThenUpdateTaskHandle;
 extern SemaphoreHandle_t joystickStateMutex;
 extern SemaphoreHandle_t buttonStateMutex;
 
+void rcInit();
 void debounceThenUpdate(void *arg);
 void handleButtonAfterDebounce(uint8_t buttonPin);
-void pollJoystickTask();
-void pollButtonTask();
+void pollJoystickTask(void *args);
+void pollButtonTask(void *args);
 bool detectEdge(uint8_t prevState, uint8_t currentState);

@@ -3,7 +3,7 @@
 - [x] write approximate methods to control $v$ and $\dot{\theta}$
 - [] measure button bounce back and measure it
 - [] investigate why left and right button aren't responsive for interrupts
-- [] approximate that the motor's speed is approximately proportional to the motor speed
+~~- [] approximate that the motor's speed is approximately proportional to the motor speed~~
 - [] figure out the motor's deadzone through experimental means
 - [] find optimal joystick deadzone
 - [] use RTOS create tasks that handle polling, and writing commands to motors, and logging to the serial terminal
@@ -250,5 +250,44 @@ Pushing it to the queue:
 ```
 xQueueSend(logQueue, &msg, 0);
 ```
+
+# Mixing and dealing with clipping
+
+Suppose that after rates, joystick deadzone, etc, we eventually get the following:
+
+```
+typedef struct {
+  float linear;
+  float angular;
+} Speed;
+```
+
+Where linear is going to be in between -1 and 1, and similarly for angular velocity.
+
+So, because this is a differential drive robot, it's best to model it using 2 output, left and right motor. There's also an additional sign remapping afterwards because we actually have 4 motors.
+
+
+So what we currently have, assuming that everything is normalized:
+
+$$
+\begin{cases}
+&u_l = u_t - \theta\\
+&u_r = u_t + \theta\\
+\end{cases}
+$$
+
+Where $u_t$ is between -1 and 1, and $\theta$ is in between -1 and 1 at its max.
+
+So what can we do to preserve shape? I scale everything down essentially, so here's what we're going to do, we'll define:
+
+- if either $|u_l|$ or $|u_r|$ is bigger than 1, take the biggest one and store it as $u_m = max(|u_l|, |u_r|)$
+- then what we do is both: $\frac{u_l}{u_m}$ and $\frac{u_r}{u_m}$
+
+# Deadzone mapping and remapping
+
+It's probably best to implement this as a pure function. call it `asymMap` and call it `invAsymMap`, where:
+
+- `asymMap` requires a `minLeft, maxLeft and minRight, maxRight, raw` and spits out a scalar called `scaled` between `-1` and `1` (this will be used for joystick ADC to actual motor commands)
+- `invAsymMap` requires a `minLeft, maxLeft, minRight, maxRight, scaled` and spits out something called `raw` between `minLeft` and `maxRight` (this will be used for commanding motor's PWM).
 
 

@@ -19,6 +19,8 @@ typedef struct {
 } LogMessage;
 
 extern QueueHandle_t logQueueHandle;
+extern TaskHandle_t loggingTaskHandle;
 
+void loggingInit();
 const char *getLogSourceName(LogSource logSource);
-void loggingTask();
+void loggingTask(void *arg);

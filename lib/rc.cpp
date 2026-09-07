@@ -72,13 +72,6 @@ void handleButtonAfterDebounce(uint8_t buttonPin) {
     return;
   }
 
-  LogMessage logMessage;
-  logMessage.timestamp = millis();
-  logMessage.logSource = RC;
-  sprintf(logMessage.text, "Received button: %d, timestamp: %lu\r\n", buttonPin,
-          millis());
-  xQueueSend(logQueueHandle, &logMessage, 0);
-
   // kinda lengthy just to get a log message out, but maybe it's managable...
 
   // sending it to the queue
@@ -106,10 +99,18 @@ void handleButtonAfterDebounce(uint8_t buttonPin) {
   Serial.print(", angular: ");
   Serial.println(speedLimit.angular);
   */
+
+  LogMessage logMessage;
+  logMessage.timestamp = millis();
+  logMessage.logSource = RC;
+  sprintf(logMessage.text,
+          "Received button: %d, linear limit: %f, angular speed limit: %f",
+          buttonPin, speedLimit.linear, speedLimit.angular);
+  xQueueSend(logQueueHandle, &logMessage, 0);
 }
 
-void pollJoystickTask() {
-  const TickType_t period = pdMS_TO_TICKS((1 / JOYSTICK_POLLING_RATE));
+void pollJoystickTask(void *args) {
+  constexpr TickType_t period = pdMS_TO_TICKS(1000 / JOYSTICK_POLLING_RATE);
   TickType_t lastWakeTime = xTaskGetTickCount();
 
   while (true) {
@@ -135,9 +136,10 @@ bool detectEdge(uint8_t prevState, uint8_t currentState) {
   }
 }
 
-void pollButtonTask() {
-  const TickType_t period = pdMS_TO_TICKS((1 / BUTTON_POLLING_RATE));
+void pollButtonTask(void *args) {
+  constexpr TickType_t period = pdMS_TO_TICKS(1000 / BUTTON_POLLING_RATE);
   TickType_t lastWakeTime = xTaskGetTickCount();
+  LogMessage logMessage;
 
   while (true) {
     // we'll just read as normal, but we'll need to make a mutex lock I guess
@@ -148,20 +150,38 @@ void pollButtonTask() {
     buttonState.down = digitalRead(remoteControlPins.down);
     buttonState.left = digitalRead(remoteControlPins.left);
     buttonState.right = digitalRead(remoteControlPins.right);
-    if (detectEdge(prevButtonState.up, buttonState.up)) {
+
+    bool upEdgeDetected = detectEdge(prevButtonState.up, buttonState.up);
+    bool downEdgeDetected = detectEdge(prevButtonState.down, buttonState.down);
+    bool leftEdgeDetected = detectEdge(prevButtonState.left, buttonState.left);
+    bool rightEdgeDetected =
+        detectEdge(prevButtonState.right, buttonState.right);
+    if (upEdgeDetected) {
       // right now, we making polling rate so low that there's no need for
       // debouncing
       handleButtonAfterDebounce(remoteControlPins.up);
     }
-    if (detectEdge(prevButtonState.down, buttonState.down)) {
+    if (downEdgeDetected) {
       handleButtonAfterDebounce(remoteControlPins.down);
     }
-    if (detectEdge(prevButtonState.left, buttonState.left)) {
+    if (leftEdgeDetected) {
       handleButtonAfterDebounce(remoteControlPins.left);
     }
-    if (detectEdge(prevButtonState.right, buttonState.right)) {
+    if (rightEdgeDetected) {
       handleButtonAfterDebounce(remoteControlPins.right);
     }
+
+    /*
+    if (leftEdgeDetected || rightEdgeDetected || upEdgeDetected ||
+        downEdgeDetected) {
+      logMessage.timestamp = millis();
+      logMessage.logSource = RC;
+      sprintf(logMessage.text,
+              "Edge detected! Linear speed limit: %f, Angular speed limit: %f",
+              speedLimit.linear, speedLimit.angular);
+    }
+    */
+
     xSemaphoreGive(buttonStateMutex);
     vTaskDelayUntil(&lastWakeTime, period);
   }

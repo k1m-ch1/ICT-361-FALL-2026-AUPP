@@ -6,13 +6,18 @@
 #include "freertos/queue.h"
 #include <Arduino.h>
 
+TaskHandle_t loggingTaskHandle;
 QueueHandle_t logQueueHandle;
 
 void loggingInit() {
   // NOTE: remember to init this as boilerplate. More responsibility, definitely
   // isn't pure and definitely is causing side effects, but it seems like this
   // is common in embedded programming...
+  Serial.begin(115200);
   logQueueHandle = xQueueCreate(LOG_QUEUE_SIZE, sizeof(LogMessage));
+
+  xTaskCreate(loggingTask, "Logging Task", 2048, nullptr, 1,
+              &loggingTaskHandle);
 }
 
 const char *getLogSourceName(LogSource logSource) {
@@ -28,7 +33,7 @@ const char *getLogSourceName(LogSource logSource) {
   }
 }
 
-void loggingTask() {
+void loggingTask(void *arg) {
   LogMessage logMessage;
   // this is blocking, so we create a seperate task
   while (true) {
