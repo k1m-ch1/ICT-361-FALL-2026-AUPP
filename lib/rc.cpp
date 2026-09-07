@@ -4,6 +4,7 @@
 #include "config.h"
 #include "logging.h"
 #include "mixer.h"
+#include "utils.h"
 #include <Arduino.h>
 #include <stdint.h>
 
@@ -26,11 +27,25 @@ void rcInit() {
 
   buttonState = {.up = 0, .left = 0, .down = 0, .right = 0};
   prevButtonState = buttonState;
-  joystickState = {.x = joystickConfig.adcMid, .y = joystickConfig.adcMid};
+  joystickState = {
+      .x = (joystickConfig.adcDeadzoneMin + joystickConfig.adcDeadzoneMax) / 2,
+      .y = (joystickConfig.adcDeadzoneMin + joystickConfig.adcDeadzoneMax) / 2};
   debounceThenUpdateTaskHandle = nullptr;
   joystickStateMutex = xSemaphoreCreateMutex();
   buttonStateMutex = xSemaphoreCreateMutex();
+
+  // automatically create the joystick polling task and the button polling task
+  // here.
+
+  xTaskCreate(pollButtonTask, "Polling button Task", 4096, nullptr, 1,
+              nullptr); // no need to store the task handle
+
+  xTaskCreate(pollJoystickTask, "Polling joystick Task", 4096, nullptr, 1,
+              nullptr); // no need to store the task handle
 }
+
+// this is the interrupted based implementation for buttons and button
+// debouncing, however, it doesn't really work for some reaason.
 
 void buttonISR(void *arg) {
   // we're expecting the arg to be the button pin
@@ -110,6 +125,7 @@ void handleButtonAfterDebounce(uint8_t buttonPin) {
 }
 
 void pollJoystickTask(void *args) {
+  LogMessage joystickLogMessage;
   constexpr TickType_t period = pdMS_TO_TICKS(1000 / JOYSTICK_POLLING_RATE);
   TickType_t lastWakeTime = xTaskGetTickCount();
 
@@ -118,7 +134,21 @@ void pollJoystickTask(void *args) {
     xSemaphoreTake(joystickStateMutex, portMAX_DELAY); // wait indefinitely
     joystickState.x = analogRead(remoteControlPins.x);
     joystickState.y = analogRead(remoteControlPins.y);
+    xSemaphoreTake(speedMutex, portMAX_DELAY); // wait indefinitely
+    // remap it to the internal variable called speed directly.
+    speed.linear = -asymNormalizedMap(
+        (float)joystickConfig.adcMin, (float)joystickConfig.adcDeadzoneMin,
+        (float)joystickConfig.adcDeadzoneMax, (float)joystickConfig.adcMax,
+        (float)joystickState.y);
+
+    speed.angular = asymNormalizedMap(
+        (float)joystickConfig.adcMin, (float)joystickConfig.adcDeadzoneMin,
+        (float)joystickConfig.adcDeadzoneMax, (float)joystickConfig.adcMax,
+        (float)joystickState.x);
+
+    xSemaphoreGive(speedMutex);
     xSemaphoreGive(joystickStateMutex);
+    xTaskNotifyGive(mixerTaskHandle);
     vTaskDelayUntil(&lastWakeTime, period);
   }
 }
@@ -139,7 +169,6 @@ bool detectEdge(uint8_t prevState, uint8_t currentState) {
 void pollButtonTask(void *args) {
   constexpr TickType_t period = pdMS_TO_TICKS(1000 / BUTTON_POLLING_RATE);
   TickType_t lastWakeTime = xTaskGetTickCount();
-  LogMessage logMessage;
 
   while (true) {
     // we'll just read as normal, but we'll need to make a mutex lock I guess
@@ -170,17 +199,6 @@ void pollButtonTask(void *args) {
     if (rightEdgeDetected) {
       handleButtonAfterDebounce(remoteControlPins.right);
     }
-
-    /*
-    if (leftEdgeDetected || rightEdgeDetected || upEdgeDetected ||
-        downEdgeDetected) {
-      logMessage.timestamp = millis();
-      logMessage.logSource = RC;
-      sprintf(logMessage.text,
-              "Edge detected! Linear speed limit: %f, Angular speed limit: %f",
-              speedLimit.linear, speedLimit.angular);
-    }
-    */
 
     xSemaphoreGive(buttonStateMutex);
     vTaskDelayUntil(&lastWakeTime, period);

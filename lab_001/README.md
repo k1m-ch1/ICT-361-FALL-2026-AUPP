@@ -392,3 +392,15 @@ There are also two architectures for notifying to update the motors.
 I know that in cleanflight, we have a separate IMU task, and a separate PID task that can run at different frequencies, and I guess the PID task's frequency would then need to be synchronized to the mixer task, and also motor command task, which means notification is a better architecture?
 
 The cool thing about the notification architecture is that we can easily turn it into a separate asynchronous task which operates at its own frequency by simply having a task that notifies that task every fixed period.
+
+Also, this means that our tasks should be started in the following order:
+
+- logging task
+- mixer task
+- rc task
+
+For it to behave nicely while everything is starting. It's no wonder why `systemd` is so complicated because of this problem of "start up dependency".
+
+
+
+

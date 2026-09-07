@@ -1,32 +1,16 @@
 #include "config.h"
 #include "rc.h"
 #include "logging.h"
+#include "mixer.h"
 
 #define JOYSTICK_LOG_PERIOD 250
 
 LogMessage joystickLogMessage;
 
 void setup(){
-  rcInit();
   loggingInit();
-
-  xTaskCreate(
-      pollButtonTask,
-      "Polling button Task",
-      2048,
-      nullptr,
-      1,
-      nullptr
-  );// no need to store the task handle
-
-  xTaskCreate(
-      pollJoystickTask,
-      "Polling joystick Task",
-      2048,
-      nullptr,
-      1,
-      nullptr
-  );// no need to store the task handle
+  mixerInit();
+  rcInit();
 }
 
 void loop(){

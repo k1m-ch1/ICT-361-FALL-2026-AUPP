@@ -6,8 +6,8 @@
 
 #include <stdint.h>
 
-// 128 bytes for each log should be plenty
-#define LOG_MESSAGE_SIZE 128
+// 256 bytes for each log should be plenty
+#define LOG_MESSAGE_SIZE 256
 #define LOG_QUEUE_SIZE 8
 
 typedef enum { MOTOR, MIXER, RC } LogSource;

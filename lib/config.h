@@ -15,7 +15,7 @@ typedef struct {
 } RemoteControlPins;
 
 constexpr RemoteControlPins remoteControlPins = {
-    .up = 16, .left = 2, .down = 15, .right = 4, .x = 35, .y = 34};
+    .up = 16, .left = 2, .down = 15, .right = 4, .x = 34, .y = 35};
 
 // we normalize the joystick to be in between -1 and 1,
 
