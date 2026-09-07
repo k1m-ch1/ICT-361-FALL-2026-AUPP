@@ -137,14 +137,14 @@ void pollJoystickTask(void *args) {
     xSemaphoreTake(speedMutex, portMAX_DELAY); // wait indefinitely
     // remap it to the internal variable called speed directly.
     speed.linear = -asymNormalizedMap(
-        (float)joystickConfig.adcMin, (float)joystickConfig.adcDeadzoneMin,
-        (float)joystickConfig.adcDeadzoneMax, (float)joystickConfig.adcMax,
-        (float)joystickState.y);
+        (float)joystickState.y, (float)joystickConfig.adcMin,
+        (float)joystickConfig.adcDeadzoneMin,
+        (float)joystickConfig.adcDeadzoneMax, (float)joystickConfig.adcMax);
 
     speed.angular = asymNormalizedMap(
-        (float)joystickConfig.adcMin, (float)joystickConfig.adcDeadzoneMin,
-        (float)joystickConfig.adcDeadzoneMax, (float)joystickConfig.adcMax,
-        (float)joystickState.x);
+        (float)joystickState.x, (float)joystickConfig.adcMin,
+        (float)joystickConfig.adcDeadzoneMin,
+        (float)joystickConfig.adcDeadzoneMax, (float)joystickConfig.adcMax);
 
     xSemaphoreGive(speedMutex);
     xSemaphoreGive(joystickStateMutex);

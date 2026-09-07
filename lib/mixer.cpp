@@ -4,8 +4,10 @@
 #include "config.h"
 #include "logging.h"
 #include "math.h"
+#include "motors.h"
 #include "utils.h"
 #include <cstdlib>
+#include <sys/types.h>
 
 Speed speed;
 
@@ -71,6 +73,13 @@ void mixerTask(void *args) {
       outputCommand[1] /= absOutputCommandMax;
     }
 
+    for (uint8_t i = 0; i < MOTORS_AMOUNT; i++) {
+      normalizedMotorCommands[i] = SIGN_MATRIX[i][0] * outputCommand[0] +
+                                   SIGN_MATRIX[i][1] * outputCommand[1];
+
+      // directly call motorWrite
+      motorWrite(motorsPins[i], normalizedMotorCommands[i]);
+    }
     /*
     mixerLogMessage.timestamp = millis();
     mixerLogMessage.logSource = MIXER;

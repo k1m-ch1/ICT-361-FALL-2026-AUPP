@@ -41,10 +41,10 @@ typedef struct {
   uint8_t pwm;
 } MotorPins;
 
-const MotorPins motorPins[MOTORS_AMOUNT] = {{.in1 = 26, .in2 = 25, .pwm = 33},
-                                            {.in1 = 32, .in2 = 27, .pwm = 14},
-                                            {.in1 = 21, .in2 = 18, .pwm = 5},
-                                            {.in1 = 23, .in2 = 22, .pwm = 19}};
+const MotorPins motorsPins[MOTORS_AMOUNT] = {{.in1 = 26, .in2 = 25, .pwm = 33},
+                                             {.in1 = 32, .in2 = 27, .pwm = 14},
+                                             {.in1 = 21, .in2 = 18, .pwm = 5},
+                                             {.in1 = 23, .in2 = 22, .pwm = 19}};
 
 typedef struct {
   uint32_t freq;
@@ -55,4 +55,4 @@ typedef struct {
 const MotorConfig motorConfig = {
     .freq = 20000, .resolution = 8, .deadzone = 0.0f};
 
-// TODO: find motor deadzone in terms of duty cycle
+// TODO: find motor deadzone in terms of duty cycle (try 0.1)
