@@ -338,8 +338,7 @@ $$
 \begin{bmatrix}
 u_l\\
 u_r
-\end{bmatrix}
-=
+\end{bmatrix} =
 \begin{bmatrix}
 1&-1\\
 1&1\\
@@ -360,8 +359,7 @@ u_{m0}\\
 u_{m1}\\
 u_{m2}\\
 u_{m3}
-\end{bmatrix}
-= 
+\end{bmatrix} =
 \mathbf{S}
 \begin{bmatrix}
 u_l\\
