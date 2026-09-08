@@ -1,5 +1,6 @@
 # TODO
 
+- [] removed unused library and test for regression
 - [x] write approximate methods to control $v$ and $\dot{\theta}$
 ~~- [] measure button bounce back and measure it~~
 ~~- [] investigate why left and right button aren't responsive for interrupts~~

@@ -9,15 +9,6 @@
 #include <math.h>
 
 void motorsInit() {
-
-  /*
-  const MotorPins motorPins[MOTORS_AMOUNT] = {
-      {.in1 = 26, .in2 = 25, .pwm = 33},
-      {.in1 = 32, .in2 = 27, .pwm = 14},
-      {.in1 = 21, .in2 = 18, .pwm = 5},
-      {.in1 = 23, .in2 = 22, .pwm = 19}};
-
-  */
   // initialize the pinModes
   for (uint8_t i = 0; i < MOTORS_AMOUNT; i++) {
     pinMode(motorsPins[i].in1, OUTPUT);

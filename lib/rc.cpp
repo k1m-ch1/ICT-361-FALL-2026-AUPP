@@ -34,9 +34,6 @@ void rcInit() {
   joystickStateMutex = xSemaphoreCreateMutex();
   buttonStateMutex = xSemaphoreCreateMutex();
 
-  // automatically create the joystick polling task and the button polling task
-  // here.
-
   xTaskCreate(pollButtonTask, "Polling button Task", 4096, nullptr, 1,
               nullptr); // no need to store the task handle
 
@@ -58,9 +55,6 @@ void buttonISR(void *arg) {
 
   portYIELD_FROM_ISR(higherPriorityTaskWoken);
 }
-
-// TODO: update state speed somehow, and write functions for each state that
-// should be handled
 
 void debounceThenUpdate(void *arg) {
   while (1) {
@@ -87,9 +81,6 @@ void handleButtonAfterDebounce(uint8_t buttonPin) {
     return;
   }
 
-  // kinda lengthy just to get a log message out, but maybe it's managable...
-
-  // sending it to the queue
   switch (buttonPin) {
   case remoteControlPins.up:
     speedLimit.linear += SPEED_UPDATE_STEP;
@@ -108,12 +99,6 @@ void handleButtonAfterDebounce(uint8_t buttonPin) {
   // there's no arguing that speedLimit is noramlized to between 0 and 1
   speedLimit.linear = max(0.0f, min(speedLimit.linear, 1.0f));
   speedLimit.angular = max(0.0f, min(speedLimit.angular, 1.0f));
-  /*
-  Serial.print("linear: ");
-  Serial.print(speedLimit.linear);
-  Serial.print(", angular: ");
-  Serial.println(speedLimit.angular);
-  */
 
   LogMessage logMessage;
   logMessage.timestamp = millis();

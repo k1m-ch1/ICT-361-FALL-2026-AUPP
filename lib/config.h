@@ -33,8 +33,6 @@ const JoystickConfig joystickConfig = {.adcMin = 0,
                                        .adcDeadzoneMax = 1865,
                                        .debounceDelayMs = 20};
 
-// TODO: find deadzone for joystick
-
 typedef struct {
   uint8_t in1;
   uint8_t in2;
@@ -54,5 +52,3 @@ typedef struct {
 
 const MotorConfig motorConfig = {
     .freq = 20000, .resolution = 8, .deadzone = 0.0f};
-
-// TODO: find motor deadzone in terms of duty cycle (try 0.1)
