@@ -40,7 +40,6 @@ We then start button task:
 Then we start the joystick task:
 
 ![joystick task flowchart](./assets/flowcharts/lab_001_joystick_polling_task.drawio.svg)
->>>>>>> 3ef33d7 (added flowcharts)
 
 # Differential drive robot's kinematics
 
