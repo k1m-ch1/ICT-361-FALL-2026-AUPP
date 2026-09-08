@@ -3,13 +3,44 @@
 - [x] write approximate methods to control $v$ and $\dot{\theta}$
 ~~- [] measure button bounce back and measure it~~
 ~~- [] investigate why left and right button aren't responsive for interrupts~~
-~~- [] approximate that the motor's speed is approximately proportional to the motor speed~~
+- [x] approximate that the motor's speed is approximately proportional to the motor speed
 - [x] figure out the motor's deadzone through experimental means
 - [x] find optimal joystick deadzone
 - [x] use RTOS create tasks that handle polling, and writing commands to motors, and logging to the serial terminal
-- [] turn it into a library
-- [] write flowchart
-- [] format code
+- [x] turn it into a library
+- [x] draw flowchart
+- [x] format code
+
+# compiling and uploading
+
+We can upload to the esp32 by doing:
+
+```
+./upload ./robotControlCar /dev/ttyUSB0
+```
+
+# Flowchart
+
+Since the program has many tasks running in parallel, we need to draw multiple flowcharts.
+
+![Task diagram](./assets/flowcharts/lab_001_task_diagram.drawio.svg)
+
+We first start the logging task.
+
+![Logging task flowchart](./assets/flowcharts/lab_001_logging_queue.drawio.svg)
+
+We then start the mixer task:
+
+![mixer task flowchart](./assets/flowcharts/lab_001_mixer_task.drawio(1).svg)
+
+We then start button task:
+
+![button task flowchart](./assets/flowcharts/lab_001_buttons_polling_task.drawio.svg)
+
+Then we start the joystick task:
+
+![joystick task flowchart](./assets/flowcharts/lab_001_joystick_polling_task.drawio.svg)
+>>>>>>> 3ef33d7 (added flowcharts)
 
 # Differential drive robot's kinematics
 
