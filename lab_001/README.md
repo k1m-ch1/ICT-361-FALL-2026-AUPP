@@ -1,6 +1,6 @@
 # TODO
 
-- [] removed unused library and test for regression
+- [x] removed unused library and test for regression
 - [x] write approximate methods to control $v$ and $\dot{\theta}$
 ~~- [] measure button bounce back and measure it~~
 ~~- [] investigate why left and right button aren't responsive for interrupts~~
@@ -19,6 +19,12 @@ We can upload to the esp32 by doing:
 ```
 ./upload ./robotControlCar /dev/ttyUSB0
 ```
+
+# Video showcase
+
+Video showcase linked [here](https://youtu.be/Tbo7F8ZeImc?si=WwJZ_EsBcvtItY92):
+
+[![](https://i3.ytimg.com/vi/Tbo7F8ZeImc?si=xtVeTdNHME5ZrcD8/maxresdefault.jpg)](https://youtu.be/Tbo7F8ZeImc?si=WwJZ_EsBcvtItY92)
 
 # Flowchart
 
