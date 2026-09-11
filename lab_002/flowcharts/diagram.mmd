@@ -1,0 +1,21 @@
+stateDiagram-v2
+
+  state "Idle (start state), also, set bitCount = 0 everytime we transition into this" as Idle
+  state "ACG passed" as ACGPassed
+  state "pause passed" as pausePassed
+  state "low bit recognized" as lowBitRecognized
+
+  %% I guess we want to be extremely conservative with what we accept
+
+  Idle --> ACGPassed : pulse lasted 9ms +- epsilon
+  ACGPassed --> pausePassed: pulse lasted 4.5ms +- epsilon
+  ACGPassed --> Idle : otherwise
+  pausePassed --> lowBitRecognized: pulse lasted 0.5ms +- epsilon AND bitCount != 32
+  pausePassed --> Idle: pulse lasted 0.5ms +- epsilon AND bitCount == 32 (reset bitCount and send what we've stored to a queue)
+  pausePassed --> Idle: otherwise
+  lowBitRecognized --> pausePassed: pulse lasted 0.562ms +- epsilon (internally increment bitCount and store the 0)
+  lowBitRecognized --> pausePassed: pulse lasted 1.687ms +- epsilon (internally increment bitCount and store the 1)
+  lowBitRecognized --> Idle: otherwise
+
+
+

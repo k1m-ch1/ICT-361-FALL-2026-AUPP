@@ -1,19 +1,17 @@
 # NEC driver
 
-So it seems like this is the architecture that's the least scuff:
+So it seems like this is the architecture that's the simplest:
 
-- we have an ISR that will just store all of the edges in a ring buffer which can be revealed to the user as a sort of queue, but it push and pop should be atomic.
+- we have an edge detector ISR that records every edge into a queue
+- we have a decoder state machine that normally transitions every time we take from the queue, however, if it takes too long to take from the queue, we transition back to the idle state. 
+- There's also some additional counters that keep track of whether it's a repeat code, or whether there's a complete frame.
+- after we get a repeat code or a complete frame, we just push that into another queue for consumers to decide what to do with that information.
 
-Now, if we had that data, we now need to implement some sort of state machine to do its best to decode it.
+an approximate NEC decoder state machine looks something like this:
 
-# References
+![nec state machine decoder](./assets/nec_decoder.png)
 
-- [amebaiotdocuments](https://amebaiotdocuments.readthedocs.io/en/latest/ambd_arduino/AMB21/examples_and_components/Peripheral%20Examples/IR%20-%20Transmit%20IR%20NEC%20Raw%20Data%20And%20Decode.html)
-- [hackster](https://www.hackster.io/news/this-tinydecoder-is-an-ir-remote-receiver-and-nec-decoder-powered-by-an-attiny13a-96b81f153397)
-- [hackaday](https://hackaday.io/project/169566-tiny-pcb-weighing-25-grams-w-a-few-features/log/177625-nec-decoding-in-c)
-- [simple circuit](https://simple-circuit.com/nec-remote-control-decoder-pic16f887-mikroc/)
+The model runs everytime we detect an edge, but there's also an external timeout (through the queue) that essentially resets the state back to idle if it takes more than around 30ms because no pulse in the NEC protocol lasts more than around 10ms. This will also be where we can decide whether what we have is a repeat code.
 
-- [sbprojects](https://www.sbprojects.net/knowledge/ir/nec.php)
-- [daily.dev](https://daily.dev/posts/nec-protocol-driver-infrared-remote-embedded-system-project-series-20-coen4vdxt)
 
 
