@@ -16,7 +16,7 @@ void loggingInit() {
   Serial.begin(115200);
   logQueueHandle = xQueueCreate(LOG_QUEUE_SIZE, sizeof(LogMessage));
 
-  xTaskCreate(loggingTask, "Logging Task", 2048, nullptr, 1,
+  xTaskCreate(loggingTask, "Logging Task", 4096, nullptr, 1,
               &loggingTaskHandle);
 }
 
@@ -28,6 +28,10 @@ const char *getLogSourceName(LogSource logSource) {
     return "MIXER";
   case RC:
     return "RC";
+  case NEC:
+    return "NEC";
+  case NEC_RC:
+    return "NEC_RC";
   default:
     return "UNKNOWN";
   }

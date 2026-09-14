@@ -36,7 +36,7 @@ void mixerInit() {
 void mixerTask(void *args) {
   // mixer task should be notification based
 
-  // LogMessage mixerLogMessage;
+  LogMessage mixerLogMessage;
   float outputCommand[OUTPUT_COMMAND_DIM];
   float absOutputCommandMax;
 
@@ -80,14 +80,12 @@ void mixerTask(void *args) {
       // directly call motorWrite
       motorWrite(motorsPins[i], normalizedMotorCommands[i]);
     }
-    /*
     mixerLogMessage.timestamp = millis();
     mixerLogMessage.logSource = MIXER;
     sprintf(mixerLogMessage.text,
             "left: %f, right: %f, absOutputCommandMax: %f", outputCommand[0],
             outputCommand[1], absOutputCommandMax);
     xQueueSend(logQueueHandle, &mixerLogMessage, 0);
-    */
     xSemaphoreGive(normalizedMotorCommandsMutex);
     xSemaphoreGive(speedMutex);
     xSemaphoreGive(speedLimitMutex);

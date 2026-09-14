@@ -7,15 +7,20 @@
 #include "freertos/queue.h"
 #include "logging.h"
 
+#include "config.h"
 #include "nec.h"
 
 const char *statesAsString[STATES_COUNT] = {
     "IDLE", "ACG_PASSED", "PAUSE_PASSED", "LOW_OF_BIT_RECOGNIZED"};
 
 QueueHandle_t edgeInfoQueueHandle;
+QueueHandle_t necCommandQueueHandle;
 
 void necInit() {
   // just something to get it started
+  necCommandQueueHandle =
+      xQueueCreate(NEC_COMMAND_QUEUE_SIZE, sizeof(NECCommand));
+
   pinMode(IR_RECEIVER_PIN, INPUT);
   edgeInfoQueueHandle = xQueueCreate(EDGE_INFO_QUEUE_SIZE, sizeof(EdgeInfo));
   attachInterrupt(digitalPinToInterrupt(IR_RECEIVER_PIN), necEdgeISR, CHANGE);
@@ -47,17 +52,29 @@ void necDecoderTask(void *args) {
   EdgeInfo edgeInfo;
   BaseType_t result;
   LogMessage necLogMessage;
+  NECCommand necCommand;
   uint8_t bitCount = 0;
   uint32_t receivedBit = 0;
+  uint32_t now = millis();
   necLogMessage.logSource = NEC;
   while (true) {
     result = xQueueReceive(edgeInfoQueueHandle, &edgeInfo,
                            pdMS_TO_TICKS(TO_IDLE_TIMEOUT));
+    now = millis();
     if (result == pdFAIL) {
       // if we've reached the timeout
       if (currentState == LOW_OF_BIT_RECOGNIZED && bitCount == 0) {
-        necLogMessage.timestamp = millis();
-        sprintf(necLogMessage.text, "This might be a repeat code");
+        // this is probably the repeat code
+
+        // send the repeat code to the queue
+        necCommand.command = 0;
+        necCommand.repeatFlag = 1;
+        necCommand.timestamp = now;
+        xQueueSend(necCommandQueueHandle, &necCommand, 0);
+
+        // now send a log message
+        necLogMessage.timestamp = now;
+        sprintf(necLogMessage.text, "This might be a REPEAT code");
         xQueueSend(logQueueHandle, &necLogMessage, 0);
       }
       bitCount = 0;
@@ -96,7 +113,13 @@ void necDecoderTask(void *args) {
         currentState = IDLE;
       }
       if (bitCount == 32) {
-        necLogMessage.timestamp = millis();
+        // send the complete frame to the command queue
+        necCommand.command = receivedBit;
+        necCommand.repeatFlag = 0;
+        necCommand.timestamp = now;
+        xQueueSend(necCommandQueueHandle, &necCommand, 0);
+
+        necLogMessage.timestamp = now;
         sprintf(necLogMessage.text, "Got a complete frame: %X", receivedBit,
                 pulseTime);
         xQueueSend(logQueueHandle, &necLogMessage, 0);
@@ -137,7 +160,7 @@ void necDecoderTask(void *args) {
       // queueTimeout
 
       /*
-      necLogMessage.timestamp = millis();
+      necLogMessage.timestamp = now;
       sprintf(necLogMessage.text, "bitCount: %d, receivedBit: %lu, got 1",
                 bitCount, receivedBit, pulseTime);
 

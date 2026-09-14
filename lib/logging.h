@@ -10,7 +10,7 @@
 #define LOG_MESSAGE_SIZE 256
 #define LOG_QUEUE_SIZE 8
 
-typedef enum { MOTOR, MIXER, RC } LogSource;
+typedef enum { MOTOR, MIXER, RC, NEC, NEC_RC } LogSource;
 
 typedef struct {
   uint32_t timestamp;

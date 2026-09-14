@@ -1,5 +1,6 @@
 #pragma once
 
+#include "config.h"
 #include <Arduino.h>
 #include <stdint.h>
 
@@ -8,9 +9,7 @@
 
 #define EDGE_INFO_QUEUE_SIZE 32
 
-#define STATE_MACHINE_FREQ 8000
-
-#define IR_RECEIVER_PIN 23
+#define NEC_COMMAND_QUEUE_SIZE 8
 
 // if we're in some state in the state machine, and it has been 35ms since we
 // received another edge (can set it in the xQueueReceive)
@@ -39,6 +38,7 @@ typedef struct {
 } EdgeInfo;
 
 extern QueueHandle_t edgeInfoQueueHandle;
+extern QueueHandle_t necCommandQueueHandle;
 
 const AcceptedRanges acgRange = {.mean = 9000, .epsilon = 500};
 
@@ -48,6 +48,12 @@ const AcceptedRanges lowOfBitRange = {.mean = 562, .epsilon = 200};
 
 const AcceptedRanges highOfBitRange[2] = {{.mean = 562, .epsilon = 200},
                                           {.mean = 1687, .epsilon = 200}};
+
+typedef struct {
+  uint32_t command;
+  uint32_t timestamp;
+  uint8_t repeatFlag;
+} NECCommand;
 
 void necInit();
 
