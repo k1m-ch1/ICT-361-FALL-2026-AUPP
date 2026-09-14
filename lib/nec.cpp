@@ -73,9 +73,11 @@ void necDecoderTask(void *args) {
         xQueueSend(necCommandQueueHandle, &necCommand, 0);
 
         // now send a log message
+        /*
         necLogMessage.timestamp = now;
         sprintf(necLogMessage.text, "This might be a REPEAT code");
         xQueueSend(logQueueHandle, &necLogMessage, 0);
+        */
       }
       bitCount = 0;
       receivedBit = 0;

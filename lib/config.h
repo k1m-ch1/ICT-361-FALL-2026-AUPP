@@ -53,4 +53,4 @@ typedef struct {
 #define IR_RECEIVER_PIN 36
 
 const MotorConfig motorConfig = {
-    .freq = 20000, .resolution = 8, .deadzone = 0.0f};
+    .freq = 20000, .resolution = 8, .deadzone = 0.08f};
