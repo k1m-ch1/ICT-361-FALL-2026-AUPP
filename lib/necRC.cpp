@@ -1,7 +1,6 @@
 #pragma once
 
 #include "necRC.h"
-#include "config.h"
 #include "logging.h"
 #include "mixer.h"
 #include "nec.h"
@@ -97,26 +96,14 @@ void necRCTask(void *args) {
       speed.angular = 0.0f;
       xSemaphoreGive(speedMutex);
       xTaskNotifyGive(mixerTaskHandle);
-      /*
-      sprintf(necRCLogMessage.text,
-              "reached a REPEAT_CODE_TIMEOUT. Force stopping the robot.");
-      xQueueSend(logQueueHandle, &necRCLogMessage, 0);
-      */
       continue;
     }
 
-    // check whether the previous NEC commands are the up, down, left, right
-    // command.
     if (necCommand.repeatFlag) {
-      // so, if the previous command was the up, down, left, right, button, and
-      // we got a repeat flag, then assume that the robot is still going up,
-      // down, left, right respectively, and do nothing
-      /*
-      sprintf(necRCLogMessage.text, "Got repeat flag. previous command was %s",
-              getAddrMapNECAsString(
-                  static_cast<AddrMapNEC>(prevNecCommand.command)));
-      xQueueSend(logQueueHandle, &necRCLogMessage, 0);
-      */
+      // if we get a repeat flag, do nothing. Essentially, if the previous
+      // commands were either up, down, left or right, the motors would be
+      // moving like, right now, and we want to do nothing about it. If it was
+      // for like, the digits, then do nothing.
       continue;
     }
 
@@ -159,7 +146,7 @@ void necRCTask(void *args) {
       continue;
     }
 
-    // if it's STAR or HASH, then we're modifying speedLimit
+    // if it's STAR or HASH or ZERO, then we're modifying speedLimit
     if (necCommand.command == STAR || necCommand.command == HASH ||
         necCommand.command == ZERO) {
       xSemaphoreTake(speedLimitMutex, portMAX_DELAY);
@@ -192,6 +179,9 @@ void necRCTask(void *args) {
       continue;
       // only store the validly mapped commands
     }
+
+    // if we're here, then we either received one of the digits, or a completely
+    // unknown command
 
     necDigitReceived =
         getAddrMapNECDigits(static_cast<AddrMapNEC>(necCommand.command));

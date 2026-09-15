@@ -1,0 +1,11 @@
+flowchart TD
+  Logging[Logging task]
+  Mixer[Mixer task]
+  NECDecoder[NEC decoder task]
+  NECDecoder -- push valid NEC command to queue --> NECRC
+  NECRC[NEC RC task]
+  NECRC -- notifies --> Mixer
+
+  NECRC -- push log message to queue --> Logging
+  NECDecoder -- push log message to queue --> Logging
+  Mixer -- push log message to queue --> Logging

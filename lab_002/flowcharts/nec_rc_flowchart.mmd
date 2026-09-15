@@ -1,0 +1,24 @@
+flowchart TD
+    Start([Start]) --> Process1[initilize the task and initialize the set speed variable to 0]
+    Process1 --> Condition{While True}
+    Condition -- True --> Success[Take from the NEC command queue]
+    Success --> Condition2{if command is a repeat}
+    Condition2 -- True --> Condition
+
+    Condition2 -- False --> Condition3{if command is a LEFT, RIGHT, UP, DOWN, or STOP}
+    Condition3 -- True --> MoveRobotProcess[Set the speed struct accordingly. For example, LEFT means speed.linear = 0, speed.angular = 1]
+    MoveRobotProcess --> NotifyMixerTaskProcess[Notifies the mixer task]
+    NotifyMixerTaskProcess --> Condition
+
+    Condition3 -- False --> Condition4{if command is a STAR, HASH, or ZERO}
+    Condition4 -- True --> SetSpeedLimit[Increase, decrease, or set the speed limit for both linear and angular velocity]
+    SetSpeedLimit --> NotifyMixerTaskProcess1[Notifies the mixer task]
+    NotifyMixerTaskProcess1 --> Condition
+
+    Condition4 -- False --> Condition5{if the command is either ONE, TWO, THREE,...,EIGHT, or NINE}
+    Condition5 -- True --> StoreDigit["Store the digit by doing something like setSpeed = setSpeed * 10 + digit (variable name might not be the one used in the program)"]
+
+    StoreDigit --> Condition
+
+    Condition4 -- False --> Condition
+    Condition -- False --> End([End])

@@ -1,9 +1,21 @@
 # TODO
 
 - [] make the queue sizes configurable in `config.h`
-- [] refactor logging across multiple
-- [] simplify the decision tree for the IR remote
+- [x] refactor logging across multiple
+- [x] simplify the decision tree for the IR remote
 - [] write the flowchart
+- [] rename some variables
+
+The complete RTOS tasks necessary for this lab include:
+
+- logging task
+- mixer task
+- NEC decoder task
+- NEC RC task
+
+How the tasks interact with one another is described here:
+
+![](./assets/lab_002_task_diagram.svg)
 
 # NEC driver
 
@@ -20,6 +32,11 @@ an approximate NEC decoder state machine looks something like this:
 
 The model runs everytime we detect an edge, but there's also an external timeout (through the queue) that essentially resets the state back to idle if it takes more than around 30ms because no pulse in the NEC protocol lasts more than around 10ms. This will also be where we can decide whether what we have is a repeat code.
 
+The NEC RC task will be the consumer of the NEC decoder task's output and decide what to do with it according to this flowchart:
+
+![NEC RC flowchart](./flowcharts/nec_rc_flowchart.mmd)
+
+
 # IR Remote command mapping
 
 0: FF9867
@@ -32,25 +49,3 @@ The model runs everytime we detect an edge, but there's also an external timeout
 7: FFE01F
 8: FFA857
 9: FF906F
-
-```c
-enum AddrMapNEC {
-  ZERO = 0xFF9867,
-  ONE = 0xFFA25D,
-  TWO = 0xFF629D,
-  THREE = 0xFFE21D,
-  FOUR = 0xFF22DD,
-  FIVE = 0xFF02FD,
-  SIX = 0xFFC23D,
-  SEVEN = 0xFFE01F,
-  EIGHT = 0xFFA857,
-  NINE = 0xFF906F,
-  UP = 0xFF18E7,
-  DOWN = 0xFF4AB5,
-  LEFT = 0xFF10EF,
-  RIGHT = 0xFF5AA5,
-  STOP = 0xFF38C7,
-  STAR = 0xFF6897, // this should decrease speed by 5
-  HASH = 0xFFB04F  // this should increase speed by 5
-};
-```
