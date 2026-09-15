@@ -3,7 +3,7 @@
 - [] make the queue sizes configurable in `config.h`
 - [x] refactor logging across multiple
 - [x] simplify the decision tree for the IR remote
-- [] write the flowchart
+- [x] write the flowchart
 - [] rename some variables
 
 The complete RTOS tasks necessary for this lab include:
@@ -34,8 +34,7 @@ The model runs everytime we detect an edge, but there's also an external timeout
 
 The NEC RC task will be the consumer of the NEC decoder task's output and decide what to do with it according to this flowchart:
 
-![NEC RC flowchart](./flowcharts/nec_rc_flowchart.mmd)
-
+![NEC RC flowchart](./assets/nec_rc_flowchart.svg)
 
 # IR Remote command mapping
 
