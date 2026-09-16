@@ -17,6 +17,11 @@ How the tasks interact with one another is described here:
 
 ![](./assets/lab_002_task_diagram.svg)
 
+The mixer task and the logging task is the same as lab 1, and further explanation of it is written here:
+
+- [mixer task explanation](../docs/mixer.md)
+- [logging task explanation](../docs/logging.md)
+
 # NEC driver
 
 So it seems like this is the architecture that's the simplest:
@@ -31,6 +36,23 @@ an approximate NEC decoder state machine looks something like this:
 ![nec state machine decoder](./assets/nec_decoder.png)
 
 The model runs everytime we detect an edge, but there's also an external timeout (through the queue) that essentially resets the state back to idle if it takes more than around 30ms because no pulse in the NEC protocol lasts more than around 10ms. This will also be where we can decide whether what we have is a repeat code.
+
+# NEC RC task
+
+The important behavior that we have currently is that:
+
+- when we press and hold the LEFT, RIGHT, UP, or DOWN button, the robot move accordingly
+- when we release it, the robot stops
+
+This is opposed to something like:
+
+- when we press the LEFT, RIGHT, UP or DOWN button, make the robot move
+- when we release it, do nothing
+- when we press the STOP button, then command the robot to STOP
+
+We choose the first behavior because I think it's a safer method to control the robot (because IR remote protocols aren't very long range, nor reliable), that is, whenever we loose the remote's repeat code signal, force stop the robot.
+
+To do this, we rely on the fact that when we hold a button on a generic IR remote, a repeat code gets sent periodically (which I measured to be around 100ms), therefore, we can say that when we receive a repeat code, within some threshold, we do nothing, however, when we don't get the repeat code within that threshold time frame, then we shut the motors down automatically.
 
 The NEC RC task will be the consumer of the NEC decoder task's output and decide what to do with it according to this flowchart:
 
