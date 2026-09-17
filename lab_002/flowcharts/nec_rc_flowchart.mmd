@@ -11,7 +11,7 @@ flowchart TD
     NotifyMixerTaskProcess --> Condition
 
     Condition3 -- False --> Condition4{if command is a STAR, HASH, or ZERO}
-    Condition4 -- True --> SetSpeedLimit[Increase, decrease, or set the speed limit for both linear and angular velocity]
+    Condition4 -- True --> SetSpeedLimit["Increase, decrease, or set the speed limit for both linear and angular velocity (with additional clamping to limit it in between -1 and 1)"]
     SetSpeedLimit --> NotifyMixerTaskProcess1[Notifies the mixer task]
     NotifyMixerTaskProcess1 --> Condition
 
