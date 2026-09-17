@@ -1,3 +1,4 @@
+
 The mixer takes the variables that we command and outputs the variables that the robot can actually control.
 
 For instance, in a quadcopter (drone), we may take in the desired roll, pitch and yaw in degrees per second and output the PWM commands for motor 1, motor 2, motor 3 and motor 4.
@@ -7,6 +8,13 @@ In our case, we take in 2 commands, desired linear velocity and desired angular 
 The mixing task simply takes in a normalized linear velocity and angular velocity command (ranges between 1 and -1), perform some calculations in order to get the desired normalized motor command to the left and the right motor. Also, the normalized linear and angular velocity is a shared variable between task, and must be protected using a mutex lock. This then gets mapped via a `motorWrite` function.
 
 More about how we calculate the desired normalized motor command can be found in [this section](#mixing-matrix) and clipping will be dealt with [here](#mixing-and-dealing-with-clipping).
+
+# Flowchart
+
+A rough flowchart of the implementation of the mixer task
+
+![mixer task flowchart](../lab_001/assets/flowcharts/lab_001_mixer_task.drawio(1).svg)
+
 
 # Differential drive robot's kinematics
 
