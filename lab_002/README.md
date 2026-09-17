@@ -45,9 +45,9 @@ The NEC protocol sends 32 bits of data, where 0 or 1 is encoded based on varying
 The architecture that we use is as follows:
 
 - we have an edge detector ISR that records every edge on the IR receiver pin into a queue
-- we have a decoder state machine that normally transitions every time we pop an element off of the queue, however, if it takes too long to take from the queue, we transition back to the idle state (we start from the idle state)
+- we have a decoder state machine that normally transitions every time we pop an element off of the blocking concurrent-safe queue, however, if it takes too long to take from the queue, we transition back to the idle state (we start from the idle state)
 - There's also some additional counters that keep track of whether it's a repeat code, or whether there's a complete frame.
-- after we get a repeat code or a complete frame, we just push that into another queue for consumers to decide what to do with that information.
+- after we get a repeat code or a complete frame, we just push that into another queue for consumer tasks to decide what to do with that information.
 
 an approximate NEC decoder state machine looks something like this:
 
