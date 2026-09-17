@@ -218,14 +218,14 @@ So what we currently have, assuming that everything is normalized:
 
 $$
 \begin{cases}
-&u_l = u_t - \theta\\
-&u_r = u_t + \theta\\
+&u_l = u_t - u_a\\
+&u_r = u_t + u_a\\
 \end{cases}
 $$
 
-Where $u_t$ is between -1 and 1, and $\theta$ is in between -1 and 1 at its max.
+Where $u_t$ is between -1 and 1, and $u_a$ is in between -1 and 1 at its max.
 
-So what can we do to preserve shape? I scale everything down essentially, so here's what we're going to do, we'll define:
+However, we also want $u_l$ and $u_r$ to be in between -1 and 1 too. Clearly, if we don't do anything, $u_l$ and $u_r$ would range between -2 and 2. So we need to scale it down if it overflows, which also preserves shape of the input (to make the robot steer approximately in the way you commanded it to):
 
 - if either $|u_l|$ or $|u_r|$ is bigger than 1, take the biggest one and store it as $u_m = max(|u_l|, |u_r|)$
 - then what we do is both: $\frac{u_l}{u_m}$ and $\frac{u_r}{u_m}$
